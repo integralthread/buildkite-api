@@ -1,8 +1,13 @@
+from .buildkite import Buildkite
+from .buildkite import BuildkiteList
+from .pipeline import Pipelines
 
-class Organization:
+class Organization(Buildkite):
 
-    def __init__(self, data):
-        self._api = data
+    def get(self, slug):
+        self._resource = f"organizations/{slug}"
+        self._api = self.fetch()
+        return self        
     
     @property
     def id(self) -> str:
@@ -21,7 +26,7 @@ class Organization:
         return self._api['name']
     
     @property
-    def slug(self) -> str:
+    def org_slug(self) -> str:
         return self._api['slug']
     
     @property
@@ -41,4 +46,29 @@ class Organization:
         return self._api['created_at']
     
     def __str__(self):
-        return f"{self.slug}"
+        return f"{self.org_slug}"
+    
+    def pipelines(self):
+        pipelines = Pipelines()
+        for p in pipelines.list(url=self.pipelines_url):
+            yield p
+    
+    def pipeline(self, pipeline_slug):
+        p = Pipeline()
+        return p.get(self.org_slug, pipeline_slug)
+    
+    # def builds(self, organization=None):
+    #     pass
+    
+    # def agents(self, organization):
+    #     pass
+    
+    # def agent(self, organization, agent_id):
+    #     pass
+    
+    # def emojis(self, organization):
+    #     pass
+
+class Organizations(BuildkiteList):
+    _item = Organization
+    _resource = "organizations"
